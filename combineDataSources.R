@@ -1,5 +1,6 @@
 library(data.table)
 library(lubridate)
+library(syuzhet)
 setwd("D:\\IS5126\\")
 
 cuisine_mapper <- function(z){
@@ -163,7 +164,11 @@ hgwcommon=hgwcommon[,c("name","postal","price_range","review_title","review_text
 hgwcommon[,postal:=as.integer(postal)]
 colnames(hgwcommon)[2]="postal_code"
 hgw_cleaned_data=merge(hgwcommon,postal,by="postal_code",all.x=TRUE)[!is.na(subzone_id)]
-hgw_cleaned_data[,rating:=sample(1:5,1)]
+#hgw_cleaned_data[,rating:=sample(1:5,1)]
+hgw_cleaned_data[,rating:=round(get_sentiment(review_text))]
+hgw_cleaned_data[rating>5,rating:=5]
+hgw_cleaned_data[rating<=0,rating:=1]
+
 hgw_cleaned_data=hgw_cleaned_data[,c("name","postal_code","subzone_id","price_range","review_title","review_text","date","rating","cuisine","type")]
 colnames(hgw_cleaned_data)=c("restaurant_name","postal_code","subzone_id","price_range","review_title","review_text","date","rating","cuisine","type")
 hgwnotcommon=hgwnotcommon[,c("name","postal","price_range","review_title","review_text","date","cuisine","type")]
@@ -229,6 +234,7 @@ yelp_region_area=yelp_region_area[,c("restaurant_name","price_range","review_tit
 cleaned_merged_restaurants=rbind(cleaned_merged_data,zomato_region_area,yelp_region_area)
 cleaned_merged_restaurants[,rating:=as.numeric(rating)]
 cleaned_merged_restaurants[,rating:=round(rating)]
-
-
-fwrite(cleaned_merged_restaurants,file="D:\\IS5126\\merged_final_data_with_zomato_yelp.csv",sep=',',col.names = TRUE,row.names = FALSE)
+cleaned_merged_restaurants[,get_sentiment_rating:=round(get_sentiment(review_text))]
+cleaned_merged_restaurants[get_sentiment_rating>5,get_sentiment_rating:=5]
+cleaned_merged_restaurants[get_sentiment_rating<=0,get_sentiment_rating:=1]
+fwrite(cleaned_merged_restaurants,file="D:\\IS5126\\merged_final_data_with_zomato_yelp_sentiment_rating.csv",sep=',',col.names = TRUE,row.names = FALSE)
