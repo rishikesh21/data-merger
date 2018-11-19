@@ -34,3 +34,9 @@ z=ggscatter(result_ethinic[cuisine=="Malaysian"],x="avg_res_rating",y="malays_ra
 
 
 cor.test(~avg_res_rating+chinese_rate,data=result_ethinic[cuisine=="Chinese"],method="pearson",conf.level=0.95)
+
+
+graph_data=data[,list(review_count=.N),by=list(cuisine,rating)][cuisine %in% c("European","Chinese","Wine & Breweries" ,"Asian","Singaporean","Fusion","Indian","Halal","Western") & rating!=0][order(rating)]
+ggplot(graph_data, aes(x = cuisine, y = review_count, fill = rating, label = rating)) +
+  geom_bar(stat = "identity") +
+  geom_text(size = 3, position = position_stack(vjust = 0.5))
